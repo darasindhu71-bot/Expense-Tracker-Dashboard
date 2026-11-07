@@ -1,4 +1,6 @@
 require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -127,6 +129,16 @@ app.delete('/api/transactions/:id', requireDB, async (req, res) => {
     res.status(500).json({ message: 'Could not delete transaction', error: error.message });
   }
 });
+
+// Serve frontend build if present (e.g. in unified Render deployment)
+const frontendDist = path.join(__dirname, '..', 'frontend', 'dist');
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
 
 let server = null;
 if (require.main === module) {

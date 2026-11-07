@@ -10,7 +10,7 @@ import {
   PieChart, Pie, Cell
 } from 'recharts';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
 const categories = ['Food & Dining', 'Shopping', 'Transport', 'Bills & Utilities', 'Entertainment', 'Health', 'Salary', 'Freelance', 'Other'];
 const palette = ['#7c6cf2', '#36c6a1', '#f5a45d', '#ec6b91', '#65a9e8', '#b39af7', '#83c98d'];
 const money = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n || 0);

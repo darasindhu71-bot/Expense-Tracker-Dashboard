@@ -17,20 +17,9 @@ try {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Dynamic or configurable CORS
-const allowedOrigins = process.env.CLIENT_URL 
-  ? process.env.CLIENT_URL.split(',').map(o => o.trim())
-  : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'];
-
+// Enable CORS for all origins and credentials
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, Postman)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
-    }
-    return callback(new Error('Blocked by CORS'));
-  },
+  origin: true,
   credentials: true
 }));
 

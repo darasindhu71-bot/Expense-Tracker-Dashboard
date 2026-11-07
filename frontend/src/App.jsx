@@ -15,6 +15,13 @@ const categories = ['Food & Dining', 'Shopping', 'Transport', 'Bills & Utilities
 const palette = ['#7c6cf2', '#36c6a1', '#f5a45d', '#ec6b91', '#65a9e8', '#b39af7', '#83c98d'];
 const money = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n || 0);
 const shortDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+const getLocalDateString = (d = new Date()) => {
+  const date = new Date(d);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 function App() {
   const [transactions, setTransactions] = useState([]);
@@ -62,22 +69,42 @@ function App() {
 
   const chartData = useMemo(() => {
     const months = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i);
-      const key = `${d.getFullYear()}-${d.getMonth()}`;
-      const label = d.toLocaleDateString('en-IN', { month: 'short' });
-      const monthItems = transactions.filter(t => {
-        const td = new Date(t.date);
-        return `${td.getFullYear()}-${td.getMonth()}` === key;
-      });
-      months.push({
-        month: label,
-        income: monthItems.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0),
-        expenses: monthItems.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
-      });
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    if (period === 'This year') {
+      for (let m = 0; m <= currentMonth; m++) {
+        const d = new Date(currentYear, m, 1);
+        const label = d.toLocaleDateString('en-IN', { month: 'short' });
+        const monthItems = transactions.filter(t => {
+          const td = new Date(t.date);
+          return td.getFullYear() === currentYear && td.getMonth() === m;
+        });
+        months.push({
+          month: label,
+          income: monthItems.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0),
+          expenses: monthItems.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+        });
+      }
+    } else {
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(currentYear, currentMonth - i, 1);
+        const key = `${d.getFullYear()}-${d.getMonth()}`;
+        const label = d.toLocaleDateString('en-IN', { month: 'short' });
+        const monthItems = transactions.filter(t => {
+          const td = new Date(t.date);
+          return `${td.getFullYear()}-${td.getMonth()}` === key;
+        });
+        months.push({
+          month: label,
+          income: monthItems.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0),
+          expenses: monthItems.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+        });
+      }
     }
     return months;
-  }, [transactions]);
+  }, [transactions, period]);
 
   const categoryData = useMemo(() => {
     const grouped = {};
@@ -140,7 +167,7 @@ function App() {
 
       <main className="main-content">
         <header className="topbar">
-          <div className="top-left"><button className="hamburger" onClick={() => setMobileNav(true)}><Menu/></button><div><div className="eyebrow">MONDAY, {new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}).toUpperCase()}</div><h1>Good afternoon <span>✦</span></h1></div></div>
+          <div className="top-left"><button className="hamburger" onClick={() => setMobileNav(true)}><Menu/></button><div><div className="eyebrow">{new Date().toLocaleDateString('en-IN',{weekday:'long'}).toUpperCase()}, {new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}).toUpperCase()}</div><h1>{new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'} <span>✦</span></h1></div></div>
           <div className="top-actions"><div className={`connection ${apiStatus}`}><span className="status-dot"/>{statusText}</div><button className="icon-button" onClick={() => notify('You’re all caught up!')}><Bell size={18}/><i/></button><div className="top-avatar">DS</div></div>
         </header>
 
@@ -189,7 +216,7 @@ function StatCard({title,value,icon,tint,detail,trend}) {
 function TransactionModal({initial,onClose,onSave}) {
   const [form,setForm] = useState({
     title: initial?.title || '', amount: initial?.amount || '', type: initial?.type || 'expense',
-    category: initial?.category || 'Food & Dining', date: initial?.date ? new Date(initial.date).toISOString().slice(0,10) : new Date().toISOString().slice(0,10),
+    category: initial?.category || 'Food & Dining', date: initial?.date ? getLocalDateString(initial.date) : getLocalDateString(),
     note: initial?.note || ''
   });
   const update = (key,value) => setForm(old=>({...old,[key]:value}));

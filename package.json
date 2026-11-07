@@ -1,0 +1,17 @@
+{
+  "name": "expense-tracker-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-stack Expense Tracker Dashboard built with React, Vite, Node.js, Express, and MongoDB",
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "backend:dev": "npm --prefix backend run dev",
+    "backend:start": "npm --prefix backend start",
+    "backend:test": "npm --prefix backend test",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:preview": "npm --prefix frontend run preview",
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix backend test"
+  }
+}
